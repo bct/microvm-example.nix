@@ -20,13 +20,13 @@
             microvm.nixosModules.microvm
             {
               networking.hostName = "my-microvm";
-              users.users.root.password = "";
+              services.getty.autologinUser = "root";
+
+              environment.systemPackages = [
+                nixpkgs.legacyPackages.${system}.usbutils
+              ];
+
               microvm = {
-                volumes = [ {
-                  mountPoint = "/var";
-                  image = "var.img";
-                  size = 256;
-                } ];
                 shares = [ {
                   # use "virtiofs" for MicroVMs that are started by systemd
                   proto = "9p";
@@ -36,6 +36,15 @@
                   source = "/nix/store";
                   mountPoint = "/nix/.ro-store";
                 } ];
+
+                devices = [
+                  {
+                    bus = "usb";
+                    #path = "vendorid=0x093a,productid=0x2510";
+                    #path = "hostbus=1,hostaddr=30";
+                    path = "hostbus=1,hostport=1";
+                  }
+                ];
 
                 hypervisor = "qemu";
                 socket = "control.socket";
